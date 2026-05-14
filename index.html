@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Portal | Vadodara Urban Transform 2010–2026</title>
+    <meta name="description"
+        content="Explore Vadodara's incredible urban transformation from 2010 to 2026 through satellite imagery comparisons of key areas.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===== Reset & Base ===== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== Animated Background ===== */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-gradient .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-gradient .orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: #6366f1;
+            top: -200px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-gradient .orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: #ec4899;
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -7s;
+        }
+
+        .bg-gradient .orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: #06b6d4;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(30px, -40px) scale(1.05);
+            }
+
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(40px, 30px) scale(1.02);
+            }
+        }
+
+        /* ===== Navbar ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 14, 26, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-links a.active {
+            color: white;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 160px 20px 80px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #818cf8;
+            margin-bottom: 24px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .hero-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.5);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #64748b;
+            max-width: 560px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Stats Bar ===== */
+        .stats-bar {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 0 20px 60px;
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px 32px;
+            background: rgba(30, 41, 59, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            min-width: 140px;
+        }
+
+        .stat-item .number {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item .label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+        }
+
+        /* ===== Section Heading ===== */
+        .section-heading {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 20px 16px;
+        }
+
+        .section-heading h2 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-heading p {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* ===== Area Cards Grid ===== */
+        .areas-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 32px auto 60px;
+            padding: 0 24px;
+        }
+
+        .area-card {
+            position: relative;
+            padding: 28px;
+            background: rgba(30, 41, 59, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            cursor: default;
+        }
+
+        .area-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .area-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .area-card:hover::before {
+            opacity: 1;
+        }
+
+        .area-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+            background: var(--accent-bg);
+        }
+
+        .area-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #f1f5f9;
+        }
+
+        .area-card .area-type {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 12px;
+        }
+
+        .area-card .area-desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .area-card .btn-explore {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: var(--accent-bg);
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            border: 1px solid var(--accent-border);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .area-card .btn-explore:hover {
+            background: var(--accent);
+            color: #0a0e1a;
+            transform: translateX(4px);
+        }
+
+        .area-card .btn-explore .arrow {
+            transition: transform 0.3s;
+        }
+
+        .area-card .btn-explore:hover .arrow {
+            transform: translateX(3px);
+        }
+
+        /* Card color themes */
+        .area-card.theme-indigo {
+            --accent: #818cf8;
+            --accent-bg: rgba(99, 102, 241, 0.1);
+            --accent-border: rgba(99, 102, 241, 0.2);
+        }
+
+        .area-card.theme-emerald {
+            --accent: #34d399;
+            --accent-bg: rgba(52, 211, 153, 0.1);
+            --accent-border: rgba(52, 211, 153, 0.2);
+        }
+
+        .area-card.theme-amber {
+            --accent: #fbbf24;
+            --accent-bg: rgba(251, 191, 36, 0.1);
+            --accent-border: rgba(251, 191, 36, 0.2);
+        }
+
+        .area-card.theme-rose {
+            --accent: #fb7185;
+            --accent-bg: rgba(251, 113, 133, 0.1);
+            --accent-border: rgba(251, 113, 133, 0.2);
+        }
+
+        .area-card.theme-cyan {
+            --accent: #22d3ee;
+            --accent-bg: rgba(34, 211, 238, 0.1);
+            --accent-border: rgba(34, 211, 238, 0.2);
+        }
+
+        .area-card.theme-violet {
+            --accent: #c084fc;
+            --accent-bg: rgba(192, 132, 252, 0.1);
+            --accent-border: rgba(192, 132, 252, 0.2);
+        }
+
+        /* ===== Quick Links / Feature Section ===== */
+        .features {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto 80px;
+            padding: 0 24px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px;
+            background: rgba(30, 41, 59, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .feature-card:hover {
+            background: rgba(30, 41, 59, 0.45);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .feature-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #e2e8f0;
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        footer p {
+            color: #475569;
+            font-size: 13px;
+        }
+
+        footer a {
+            color: #818cf8;
+            text-decoration: none;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            nav {
+                padding: 12px 20px;
+            }
+
+            .hero {
+                padding: 130px 16px 60px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+
+            .areas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                gap: 12px;
+            }
+
+            .stat-item {
+                min-width: 110px;
+                padding: 14px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* ===== Scroll animations ===== */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Animated Background -->
+    <div class="bg-gradient">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav>
+        <a href="index.html" class="logo">
+            <div class="logo-icon">V</div>
+            <div class="logo-text"><span>V-</span>Portal</div>
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Home</a>
+            <a href="compare.html">Compare</a>
+            <a href="leaflet.html">Map</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-badge">
+            <div class="pulse"></div>
+            Vadodara Urban Development
+        </div>
+        <h1>
+            Witness the<br>
+            <span class="gradient-text">Transformation</span><br>
+            of Vadodara
+        </h1>
+        <p>Explore how key areas of Vadodara have evolved from 2010 to 2026 through stunning satellite imagery and
+            side-by-side comparisons.</p>
+        <div class="hero-actions">
+            <a href="compare.html" class="btn btn-primary" id="btn-explore-all">
+                🛰️ Explore Comparisons
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="number">6+</div>
+            <div class="label">Areas Covered</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">16</div>
+            <div class="label">Years of Growth</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">2026</div>
+            <div class="label">Latest Imagery</div>
+        </div>
+    </div>
+
+    <!-- Area Section -->
+    <div class="section-heading fade-in-section">
+        <h2>🏙️ Explore Areas</h2>
+        <p>Select a location to view its transformation</p>
+    </div>
+
+    <div class="areas-grid">
+
+        <!-- Railway Station -->
+        <div class="area-card theme-rose fade-in-section" id="card-railway">
+            <div class="area-icon" style="background: rgba(208, 214, 40, 0.12);">🚂</div>
+            <div class="area-type">Transport Hub</div>
+            <h3>Railway Station</h3>
+            <p class="area-desc">Dramatic transformation of Vadodara Junction with modernized platforms, architecture &
+                infrastructure.</p>
+            <a href="railway-compare.html" class="btn-explore" id="btn-railway">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Saraswati Complex -->
+        <div class="area-card theme-indigo fade-in-section" id="card-saraswati">
+            <div class="area-icon" style="background: rgba(23, 212, 93, 0.12);">🏢</div>
+            <div class="area-type">Commercial Hub</div>
+            <h3>Saraswati Complex</h3>
+            <p class="area-desc">Major commercial center that has seen rapid modernization with new retail spaces and
+                infrastructure upgrades.</p>
+            <a href="sarshwati-compare.html" class="btn-explore" id="btn-saraswati">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Sarshwati Complex -->
+        <div class="area-card theme-emerald fade-in-section" id="card-sarshwati">
+            <div class="area-icon" style="background: rgba(52,211,153,0.12);">🏬</div>
+            <div class="area-type">Market Zone</div>
+            <h3>Sarshwati Complex</h3>
+            <p class="area-desc">Bustling marketplace area with expanding commercial footprint and improved connectivity
+                over the years.</p>
+            <a href="sarshwati-compare.html" class="btn-explore" id="btn-sarshwati">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Makarpura Depot -->
+        <div class="area-card theme-amber fade-in-section" id="card-makarpura">
+            <div class="area-icon" style="background: rgba(251,191,36,0.12);">🚌</div>
+            <div class="area-type">Transport Hub</div>
+            <h3>Makarpura Depot</h3>
+            <p class="area-desc">Key transit center transformed with modernized bus depot facilities and surrounding
+                urban development.</p>
+            <a href="makarpura-compare.html" class="btn-explore" id="btn-makarpura">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Gotri -->
+        <div class="area-card theme-rose fade-in-section" id="card-gotri">
+            <div class="area-icon" style="background: rgba(140, 135, 247, 0.12);">🏘️</div>
+            <div class="area-type">Residential Growth</div>
+            <h3>Gotri</h3>
+            <p class="area-desc">Once a peripheral area, Gotri has seen explosive residential growth with new housing
+                societies and roads.</p>
+            <a href="gotri-compare.html" class="btn-explore" id="btn-gotri">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Alkapuri -->
+        <div class="area-card theme-cyan fade-in-section" id="card-alkapuri">
+            <div class="area-icon" style="background: rgba(34,211,238,0.12);">🌳</div>
+            <div class="area-type">Premium Locality</div>
+            <h3>Alkapuri</h3>
+            <p class="area-desc">Premium area of Vadodara featuring upscale developments, parks, and refined urban
+                planning.</p>
+            <a href="alkapuri-compare.html" class="btn-explore" id="btn-alkapuri">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Bhayli -->
+        <div class="area-card theme-violet fade-in-section" id="card-bhayli">
+            <div class="area-icon" style="background: rgba(192,132,252,0.12);">🏗️</div>
+            <div class="area-type">Expanding Suburb</div>
+            <h3>Bhayli</h3>
+            <p class="area-desc">Rapidly expanding suburban area with massive new township projects and infrastructure
+                development.</p>
+            <a href="bhayli-compare.html" class="btn-explore" id="btn-bhayli">
+                View Comparison <span class="arrow">→</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Quick Links Section -->
+    <div class="section-heading fade-in-section">
+        <h2>⚡ Quick Access</h2>
+        <p>Jump to detailed comparison pages</p>
+    </div>
+
+    <div class="features">
+        <div class="features-grid">
+
+            <a href="compare.html" class="feature-card fade-in-section" id="link-satellite-compare">
+                <div class="feature-icon" style="background: rgba(99,102,241,0.1);">🛰️</div>
+                <div>
+                    <h4>Satellite Comparison Tool</h4>
+                    <p>Interactive slider to compare satellite views of Vadodara's urban sprawl.</p>
+                </div>
+            </a>
+            <a href="leaflet.html" class="feature-card fade-in-section" id="link-map-view">
+                <div class="feature-icon" style="background: rgba(52,211,153,0.1);">🗺️</div>
+                <div>
+                    <h4>Map Exploration</h4>
+                    <p>Explore Vadodara's geography and development zones on an interactive map.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 V-Portal — Vadodara Urban Development Tracker &nbsp;|&nbsp; Built with ❤️</p>
+    </footer>
+
+    <!-- Scroll animation script -->
+    <script>
+        // Intersection Observer for fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Stagger animations
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -40px 0px'
+        });
+
+        document.querySelectorAll('.fade-in-section').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+</body>
+
+</html>

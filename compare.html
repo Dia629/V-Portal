@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Area Comparisons | V-Portal</title>
+   <meta name="description" content="Compare satellite imagery of Vadodara areas from 2010 to 2026">
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet">
+   <style>
+      *,
+      *::before,
+      *::after {
+         margin: 0;
+         padding: 0;
+         box-sizing: border-box;
+      }
+
+      body {
+         font-family: 'Inter', sans-serif;
+         background: #0a0e1a;
+         color: #e2e8f0;
+         min-height: 100vh;
+         overflow-x: hidden;
+      }
+
+      body::before {
+         content: '';
+         position: fixed;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+         z-index: 0;
+         pointer-events: none;
+      }
+
+      /* Back nav */
+      .back-nav {
+         position: relative;
+         z-index: 10;
+         padding: 16px 32px;
+         background: rgba(15, 23, 42, 0.7);
+         backdrop-filter: blur(12px);
+         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .back-nav a {
+         color: #94a3b8;
+         text-decoration: none;
+         font-size: 14px;
+         font-weight: 500;
+         transition: color 0.3s;
+         display: inline-flex;
+         align-items: center;
+         gap: 8px;
+      }
+
+      .back-nav a:hover {
+         color: #60a5fa;
+      }
+
+      .back-nav a::before {
+         content: '←';
+         font-size: 18px;
+      }
+
+      /* Hero */
+      .hero {
+         position: relative;
+         z-index: 1;
+         text-align: center;
+         padding: 60px 24px 40px;
+      }
+
+      .hero .badge {
+         display: inline-block;
+         padding: 6px 18px;
+         border-radius: 100px;
+         background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(168, 85, 247, 0.15));
+         border: 1px solid rgba(99, 102, 241, 0.25);
+         font-size: 12px;
+         font-weight: 600;
+         letter-spacing: 1.5px;
+         text-transform: uppercase;
+         color: #818cf8;
+         margin-bottom: 20px;
+      }
+
+      .hero h1 {
+         font-size: clamp(28px, 5vw, 48px);
+         font-weight: 800;
+         background: linear-gradient(135deg, #f8fafc, #94a3b8);
+         -webkit-background-clip: text;
+         -webkit-text-fill-color: transparent;
+         line-height: 1.2;
+         margin-bottom: 12px;
+      }
+
+      .hero p {
+         font-size: 16px;
+         color: #64748b;
+         max-width: 500px;
+         margin: 0 auto;
+      }
+
+      /* Area nav buttons */
+      .area-nav {
+         position: relative;
+         z-index: 1;
+         display: flex;
+         justify-content: center;
+         gap: 10px;
+         flex-wrap: wrap;
+         padding: 0 24px 50px;
+      }
+
+      .area-btn {
+         padding: 10px 22px;
+         font-family: 'Inter', sans-serif;
+         font-size: 13px;
+         font-weight: 600;
+         border-radius: 12px;
+         border: 1px solid rgba(255, 255, 255, 0.1);
+         background: rgba(30, 41, 59, 0.4);
+         color: #94a3b8;
+         cursor: pointer;
+         transition: all 0.3s;
+         text-decoration: none;
+      }
+
+      .area-btn:hover,
+      .area-btn.active {
+         background: rgba(99, 102, 241, 0.15);
+         border-color: rgba(99, 102, 241, 0.4);
+         color: #818cf8;
+         transform: translateY(-2px);
+      }
+
+      /* Divider */
+      .area-divider {
+         position: relative;
+         z-index: 1;
+         max-width: 1000px;
+         margin: 0 auto;
+         padding: 60px 24px 0;
+         border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .area-divider:first-of-type {
+         border-top: none;
+         padding-top: 0;
+      }
+
+      /* Area Title */
+      .area-title {
+         position: relative;
+         z-index: 1;
+         text-align: center;
+         margin-bottom: 30px;
+      }
+
+      .area-title .badge {
+         display: inline-block;
+         padding: 6px 18px;
+         border-radius: 100px;
+         font-size: 12px;
+         font-weight: 600;
+         letter-spacing: 1.5px;
+         text-transform: uppercase;
+         margin-bottom: 14px;
+      }
+
+      .area-title h2 {
+         font-size: clamp(22px, 4vw, 36px);
+         font-weight: 800;
+         color: #cbd5e1;
+         margin-bottom: 8px;
+      }
+
+      .area-title p {
+         font-size: 15px;
+         color: #64748b;
+      }
+
+      /* Stats bar */
+      .stats-bar {
+         position: relative;
+         z-index: 1;
+         display: flex;
+         justify-content: center;
+         gap: 30px;
+         padding: 20px 24px 30px;
+         flex-wrap: wrap;
+      }
+
+      .stat-item {
+         text-align: center;
+         padding: 14px 24px;
+         border-radius: 16px;
+         background: rgba(30, 41, 59, 0.5);
+         border: 1px solid rgba(255, 255, 255, 0.06);
+         backdrop-filter: blur(8px);
+         min-width: 120px;
+         transition: transform 0.3s, border-color 0.3s;
+      }
+
+      .stat-item:hover {
+         transform: translateY(-4px);
+         border-color: rgba(99, 102, 241, 0.3);
+      }
+
+      .stat-item .number {
+         font-size: 24px;
+         font-weight: 800;
+         background: linear-gradient(135deg, #60a5fa, #a78bfa);
+         -webkit-background-clip: text;
+         -webkit-text-fill-color: transparent;
+      }
+
+      .stat-item .label {
+         font-size: 11px;
+         color: #64748b;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         margin-top: 4px;
+      }
+
+      /* Comparison wrapper (slider) */
+      .compare-section {
+         position: relative;
+         z-index: 1;
+         max-width: 1000px;
+         margin: 20px auto 40px;
+         padding: 0 24px;
+      }
+
+      .compare-wrapper {
+         position: relative;
+         border-radius: 20px;
+         overflow: hidden;
+         border: 1px solid rgba(255, 255, 255, 0.08);
+         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(59, 130, 246, 0.08);
+         aspect-ratio: 16/10;
+         cursor: ew-resize;
+         user-select: none;
+      }
+
+      .compare-wrapper img {
+         position: absolute;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+      }
+
+      .img-after {
+         clip-path: inset(0 0 0 50%);
+         z-index: 2;
+      }
+
+      .img-before {
+         z-index: 1;
+      }
+
+      /* Slider */
+      .slider-line {
+         position: absolute;
+         top: 0;
+         bottom: 0;
+         left: 50%;
+         width: 3px;
+         background: linear-gradient(180deg, #60a5fa, #a78bfa, #60a5fa);
+         z-index: 10;
+         transform: translateX(-50%);
+         box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+      }
+
+      .slider-handle {
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         width: 48px;
+         height: 48px;
+         border-radius: 50%;
+         background: rgba(15, 23, 42, 0.85);
+         border: 2px solid rgba(96, 165, 250, 0.8);
+         z-index: 11;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(96, 165, 250, 0.3);
+         backdrop-filter: blur(8px);
+      }
+
+      .slider-handle svg {
+         width: 22px;
+         height: 22px;
+         fill: #60a5fa;
+      }
+
+      .year-label {
+         position: absolute;
+         bottom: 16px;
+         z-index: 5;
+         padding: 8px 20px;
+         border-radius: 100px;
+         font-size: 14px;
+         font-weight: 700;
+         letter-spacing: 1px;
+         backdrop-filter: blur(12px);
+      }
+
+      .label-before {
+         left: 16px;
+         background: rgba(239, 68, 68, 0.2);
+         border: 1px solid rgba(239, 68, 68, 0.4);
+         color: #fca5a5;
+      }
+
+      .label-after {
+         right: 16px;
+         background: rgba(34, 197, 94, 0.2);
+         border: 1px solid rgba(34, 197, 94, 0.4);
+         color: #86efac;
+      }
+
+      /* Side by side */
+      .side-by-side {
+         position: relative;
+         z-index: 1;
+         max-width: 1000px;
+         margin: 40px auto;
+         padding: 0 24px;
+      }
+
+      .side-by-side h3 {
+         text-align: center;
+         font-size: 20px;
+         font-weight: 700;
+         margin-bottom: 24px;
+         color: #cbd5e1;
+      }
+
+      .sbs-grid {
+         display: grid;
+         grid-template-columns: 1fr 1fr;
+         gap: 20px;
+      }
+
+      .sbs-card {
+         border-radius: 16px;
+         overflow: hidden;
+         border: 1px solid rgba(255, 255, 255, 0.06);
+         background: rgba(30, 41, 59, 0.4);
+         transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .sbs-card:hover {
+         transform: translateY(-6px);
+         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .sbs-card img {
+         width: 100%;
+         aspect-ratio: 16/10;
+         object-fit: cover;
+         display: block;
+      }
+
+      .sbs-card .card-footer {
+         padding: 16px 20px;
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+      }
+
+      .sbs-card .card-year {
+         font-size: 20px;
+         font-weight: 800;
+      }
+
+      .card-old .card-year {
+         color: #f87171;
+      }
+
+      .card-new .card-year {
+         color: #4ade80;
+      }
+
+      .sbs-card .card-tag {
+         font-size: 11px;
+         padding: 4px 12px;
+         border-radius: 100px;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         font-weight: 600;
+      }
+
+      .card-old .card-tag {
+         background: rgba(239, 68, 68, 0.15);
+         color: #fca5a5;
+      }
+
+      .card-new .card-tag {
+         background: rgba(34, 197, 94, 0.15);
+         color: #86efac;
+      }
+
+      /* Info cards */
+      .info-section {
+         position: relative;
+         z-index: 1;
+         max-width: 800px;
+         margin: 30px auto 60px;
+         padding: 0 24px;
+      }
+
+      .info-grid {
+         display: grid;
+         grid-template-columns: 1fr 1fr;
+         gap: 20px;
+      }
+
+      .info-card {
+         padding: 28px;
+         border-radius: 16px;
+         background: rgba(30, 41, 59, 0.4);
+         border: 1px solid rgba(255, 255, 255, 0.06);
+         backdrop-filter: blur(8px);
+         transition: border-color 0.3s;
+      }
+
+      .info-card:hover {
+         border-color: rgba(99, 102, 241, 0.3);
+      }
+
+      .info-card h3 {
+         font-size: 16px;
+         font-weight: 700;
+         margin-bottom: 10px;
+      }
+
+      .info-card.old h3 {
+         color: #f87171;
+      }
+
+      .info-card.new h3 {
+         color: #4ade80;
+      }
+
+      .info-card ul {
+         list-style: none;
+         display: flex;
+         flex-direction: column;
+         gap: 8px;
+      }
+
+      .info-card li {
+         font-size: 13px;
+         color: #94a3b8;
+         padding-left: 18px;
+         position: relative;
+      }
+
+      .info-card li::before {
+         content: '';
+         position: absolute;
+         left: 0;
+         top: 6px;
+         width: 6px;
+         height: 6px;
+         border-radius: 50%;
+      }
+
+      .info-card.old li::before {
+         background: #f87171;
+      }
+
+      .info-card.new li::before {
+         background: #4ade80;
+      }
+
+      /* Footer */
+      footer {
+         position: relative;
+         z-index: 1;
+         text-align: center;
+         padding: 30px;
+         border-top: 1px solid rgba(255, 255, 255, 0.06);
+         color: #475569;
+         font-size: 13px;
+      }
+
+      footer a {
+         color: #818cf8;
+         text-decoration: none;
+      }
+
+      @media (max-width: 640px) {
+
+         .sbs-grid,
+         .info-grid {
+            grid-template-columns: 1fr;
+         }
+
+         .stats-bar {
+            gap: 12px;
+         }
+
+         .stat-item {
+            min-width: 90px;
+            padding: 10px 14px;
+         }
+
+         .area-nav {
+            gap: 6px;
+         }
+      }
+   </style>
+</head>
+
+<body>
+
+   <nav class="back-nav" style="display: flex; justify-content: space-between;">
+      <a href="index.html">Back to Portal</a>
+      <a href="leaflet.html" style="color: #60a5fa; font-weight: 600;">Explore Map →</a>
+   </nav>
+
+   <section class="hero">
+      <div class="badge">Satellite Imagery</div>
+      <h1>Area Comparisons</h1>
+      <p>Explore Vadodara's transformation across multiple key locations — 2010 vs 2026</p>
+   </section>
+
+   <div class="area-nav">
+      <a href="#railway" class="area-btn">🚉 Railway Station</a>
+      <a href="#sarshwati" class="area-btn">🏬 Sarshwati Complex</a>
+      <a href="#makarpura" class="area-btn">🚌 Makarpura Depot</a>
+      <a href="#tulsidham" class="area-btn">🏘️ Tulsidham</a>
+      <a href="#alkapuri" class="area-btn">🏛️ Arcade Alkapuri</a>
+      <a href="#bhayli" class="area-btn">🌆 Bhayli</a>
+      <a href="#gotri" class="area-btn">🏗️ Gotri</a>
+   </div>
+
+   <!-- ============ RAILWAY STATION ============ -->
+
+   <nav class="back-nav" style="display: flex; justify-content: space-between;">
+      <a href="index.html">Back to Portal</a>
+      <a href="leaflet.html" style="color: #60a5fa; font-weight: 600;">Explore Map →</a>
+   </nav>
+
+   <section class="hero">
+      <div class="badge">Satellite Imagery</div>
+      <h1>Railway Station</h1>
+      <p>Vadodara Junction transformation over 16 years of urban development</p>
+   </section>
+
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+
+   <section class="compare-section">
+      <div class="compare-wrapper" id="compareWrapper">
+         <img src="2010 railway station.jpeg" alt="Railway Station 2010" class="img-before" draggable="false">
+         <img src="2026 railway station.jpeg" alt="Railway Station 2026" class="img-after" id="imgAfter"
+            draggable="false">
+         <div class="slider-line" id="sliderLine"></div>
+         <div class="slider-handle" id="sliderHandle">
+            <svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg>
+         </div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+
+   <section class="side-by-side">
+      <h2>Side-by-Side View</h2>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old">
+            <img src="2010 railway station.jpeg" alt="Railway Station 2010">
+            <div class="card-footer">
+               <span class="card-year">2010</span>
+               <span class="card-tag">Before</span>
+            </div>
+         </div>
+         <div class="sbs-card card-new">
+            <img src="2026 railway station.jpeg" alt="Railway Station 2026">
+            <div class="card-footer">
+               <span class="card-year">2026</span>
+               <span class="card-tag">After</span>
+            </div>
+         </div>
+      </div>
+   </section>
+
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Older infrastructure layout</li>
+               <li>Limited platform coverage</li>
+               <li>Basic surrounding roads</li>
+               <li>Sparse commercial area</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Modernized station structure</li>
+               <li>Expanded platforms & tracks</li>
+               <li>Improved road network</li>
+               <li>Developed commercial zone</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ SARSHWATI COMPLEX ============ -->
+   <div class="area-divider" id="sarshwati"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.25);">
+         Commercial Hub</div>
+      <h2>🏬 Sarshwati Complex</h2>
+      <p>Commercial area transformation over 16 years</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="2010 sarshwati complex.jpeg" alt="Sarshwati 2010" class="img-before" draggable="false">
+         <img src="2026 sarshwati complex.jpeg" alt="Sarshwati 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="2010 sarshwati complex.jpeg" alt="Sarshwati 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="2026 sarshwati complex.jpeg" alt="Sarshwati 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Sparse commercial layout</li>
+               <li>Limited retail infrastructure</li>
+               <li>Narrow surrounding roads</li>
+               <li>Low building density</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Dense commercial zone</li>
+               <li>Modern retail complexes</li>
+               <li>Widened road network</li>
+               <li>High-rise developments</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ MAKARPURA DEPOT ============ -->
+   <div class="area-divider" id="makarpura"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);">
+         Transport Hub</div>
+      <h2>🚌 Makarpura Bus Depot</h2>
+      <p>Transit infrastructure modernization</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="bus depot 2010.jpeg" alt="Makarpura 2010" class="img-before" draggable="false">
+         <img src="bus depot 2026.jpeg" alt="Makarpura 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="bus depot 2010.jpeg" alt="Depot 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="bus depot 2026.jpeg" alt="Depot 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Basic bus depot structure</li>
+               <li>Unpaved parking areas</li>
+               <li>Limited surrounding development</li>
+               <li>Older transit facilities</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Modernized depot layout</li>
+               <li>Paved & organized parking</li>
+               <li>Expanded surrounding infrastructure</li>
+               <li>Upgraded transit systems</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ TULSIDHAM ============ -->
+   <div class="area-divider" id="tulsidham"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25);">
+         Residential Zone</div>
+      <h2>🏘️ Tulsidham</h2>
+      <p>Residential expansion and urban growth</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="tulsidham 2010.jpeg" alt="Tulsidham 2010" class="img-before" draggable="false">
+         <img src="tulsidham 2026.jpeg" alt="Tulsidham 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="tulsidham 2010.jpeg" alt="Tulsidham 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="tulsidham 2026.jpeg" alt="Tulsidham 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Early-stage housing plots</li>
+               <li>Open undeveloped land</li>
+               <li>Limited road connectivity</li>
+               <li>Few residential buildings</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Dense housing societies</li>
+               <li>Fully developed township</li>
+               <li>Connected road network</li>
+               <li>Commercial amenities nearby</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ ARCADE ALKAPURI ============ -->
+   <div class="area-divider" id="alkapuri"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(236,72,153,0.12);color:#ec4899;border:1px solid rgba(236,72,153,0.25);">
+         Shopping District</div>
+      <h2>🏛️ Arcade Alkapuri</h2>
+      <p>Premium commercial corridor evolution</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="2010 ARCADE ALKAPURI.png" alt="Arcade Alkapuri 2010" class="img-before" draggable="false">
+         <img src="2026 Arcade alkapuri.png" alt="Arcade Alkapuri 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="2010 ARCADE ALKAPURI.png" alt="Arcade Alkapuri 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="2026 Arcade alkapuri.png" alt="Arcade Alkapuri 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Traditional market layout</li>
+               <li>Smaller retail outlets</li>
+               <li>Limited parking infrastructure</li>
+               <li>Older building facades</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Premium branded showrooms</li>
+               <li>Modern glass-facade architecture</li>
+               <li>Multi-level parking facilities</li>
+               <li>Upscale dining & entertainment zones</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ BHAYLI ============ -->
+   <div class="area-divider" id="bhayli"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(14,165,233,0.12);color:#0ea5e9;border:1px solid rgba(14,165,233,0.25);">
+         Emerging Suburb</div>
+      <h2>🌆 Bhayli</h2>
+      <p>Suburban expansion and township development</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="2010 Bhayli.jpeg" alt="Bhayli 2010" class="img-before" draggable="false">
+         <img src="2026 Bhayli.jpeg" alt="Bhayli 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="2010 Bhayli.jpeg" alt="Bhayli 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="2026 Bhayli.jpeg" alt="Bhayli 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Mostly agricultural land</li>
+               <li>Sparse village settlements</li>
+               <li>Single-lane approach roads</li>
+               <li>No organized infrastructure</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Large-scale township projects</li>
+               <li>High-rise residential complexes</li>
+               <li>Wide arterial roads & flyovers</li>
+               <li>Schools, malls & healthcare facilities</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <!-- ============ GOTRI ============ -->
+   <div class="area-divider" id="gotri"></div>
+   <div class="area-title">
+      <div class="badge" style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);">
+         Growth Corridor</div>
+      <h2>🏗️ Gotri</h2>
+      <p>Rapid urbanization along the western corridor</p>
+   </div>
+   <div class="stats-bar">
+      <div class="stat-item">
+         <div class="number">2010</div>
+         <div class="label">Before</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">16</div>
+         <div class="label">Years</div>
+      </div>
+      <div class="stat-item">
+         <div class="number">2026</div>
+         <div class="label">After</div>
+      </div>
+   </div>
+   <section class="compare-section">
+      <div class="compare-wrapper" data-slider>
+         <img src="2010 gotri.jpeg" alt="Gotri 2010" class="img-before" draggable="false">
+         <img src="2026 gotri.jpeg" alt="Gotri 2026" class="img-after" draggable="false">
+         <div class="slider-line"></div>
+         <div class="slider-handle"><svg viewBox="0 0 24 24">
+               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+               <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" transform="scale(-1,1) translate(-24,0)" />
+            </svg></div>
+         <div class="year-label label-before">2010</div>
+         <div class="year-label label-after">2026</div>
+      </div>
+   </section>
+   <section class="side-by-side">
+      <h3>Side-by-Side View</h3>
+      <div class="sbs-grid">
+         <div class="sbs-card card-old"><img src="2010 gotri.jpeg" alt="Gotri 2010">
+            <div class="card-footer"><span class="card-year">2010</span><span class="card-tag">Before</span></div>
+         </div>
+         <div class="sbs-card card-new"><img src="2026 gotri.jpeg" alt="Gotri 2026">
+            <div class="card-footer"><span class="card-year">2026</span><span class="card-tag">After</span></div>
+         </div>
+      </div>
+   </section>
+   <section class="info-section">
+      <div class="info-grid">
+         <div class="info-card old">
+            <h3>2010 — Before</h3>
+            <ul>
+               <li>Semi-rural landscape</li>
+               <li>Scattered residential plots</li>
+               <li>Narrow internal roads</li>
+               <li>Minimal commercial activity</li>
+            </ul>
+         </div>
+         <div class="info-card new">
+            <h3>2026 — After</h3>
+            <ul>
+               <li>Dense urban neighborhood</li>
+               <li>Multi-story apartment blocks</li>
+               <li>Well-planned road grid</li>
+               <li>Shopping centers & IT parks</li>
+            </ul>
+         </div>
+      </div>
+   </section>
+
+   <footer>
+      <p><a href="index.html">V-Portal</a> &copy; 2026 — Vadodara Satellite Comparison Project</p>
+   </footer>
+
+   <!-- Slider script for ALL compare wrappers -->
+   <script>
+      document.querySelectorAll('[data-slider]').forEach(wrapper => {
+         const imgAfter = wrapper.querySelector('.img-after');
+         const sliderLine = wrapper.querySelector('.slider-line');
+         const sliderHandle = wrapper.querySelector('.slider-handle');
+         let isDragging = false;
+
+         function updateSlider(x) {
+            const rect = wrapper.getBoundingClientRect();
+            let pos = ((x - rect.left) / rect.width) * 100;
+            pos = Math.max(2, Math.min(98, pos));
+            imgAfter.style.clipPath = `inset(0 0 0 ${pos}%)`;
+            sliderLine.style.left = pos + '%';
+            sliderHandle.style.left = pos + '%';
+         }
+
+         wrapper.addEventListener('mousedown', e => { isDragging = true; updateSlider(e.clientX); });
+         window.addEventListener('mousemove', e => { if (isDragging) updateSlider(e.clientX); });
+         window.addEventListener('mouseup', () => { isDragging = false; });
+         wrapper.addEventListener('touchstart', e => { isDragging = true; updateSlider(e.touches[0].clientX); }, { passive: true });
+         window.addEventListener('touchmove', e => { if (isDragging) updateSlider(e.touches[0].clientX); }, { passive: true });
+         window.addEventListener('touchend', () => { isDragging = false; });
+      });
+   </script>
+
+</body>
+
+</html>
